@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNIPER ARENA — Tactical Training</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0c0e0b;
+            --panel: #141612;
+            --panel-raised: #1a1d17;
+            --olive: #4a5d3a;
+            --olive-light: #6b7f52;
+            --tan: #8b7d5a;
+            --tan-light: #a8996d;
+            --danger: #8b2635;
+            --danger-light: #a83245;
+            --text: #b8b5a8;
+            --text-bright: #d4d0c4;
+            --text-dim: #5a5748;
+            --grid: rgba(74, 93, 58, 0.08);
+            --border: #2a2d24;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tactical Grid Background */
+        .tactical-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .tactical-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, var(--bg) 85%);
+            pointer-events: none;
+        }
+
+        /* Auth Screen */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: var(--bg);
+        }
+
+        .auth-screen.hidden {
+            display: none;
+        }
+
+        .auth-container {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--olive);
+        }
+
+        .auth-header {
+            padding: 40px 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .auth-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+
+        .auth-header .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--olive-light);
+            margin-top: 8px;
+            letter-spacing: 2px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .auth-tab:hover {
+            color: var(--text);
+            background: rgba(74, 93, 58, 0.1);
+        }
+
+        .auth-tab.active {
+            color: var(--tan-light);
+            background: rgba(139, 125, 90, 0.08);
+        }
+
+        .auth-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: var(--tan);
+        }
+
+        .auth-form {
+            padding: 32px 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--olive-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-bright);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--olive);
+            background: rgba(74, 93, 58, 0.05);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--olive);
+            border: none;
+            color: var(--bg);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .auth-btn:hover {
+            background: var(--olive-light);
+        }
+
+        .guest-btn {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .guest-btn:hover {
+            border-color: var(--tan);
+            color: var(--tan);
+        }
+
+        .error-msg {
+            color: var(--danger-light);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            margin-top: 12px;
+            text-align: center;
+            min-height: 18px;
+            letter-spacing: 1px;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        /* Tactical Navbar */
+        .navbar {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-brand h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .nav-brand .tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--olive);
+            border: 1px solid var(--olive);
+            padding: 2px 8px;
+            letter-spacing: 1px;
+        }
+
+        .nav-stats {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-stat {
+            text-align: left;
+        }
+
+        .nav-stat-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .nav-stat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--tan-light);
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger-light);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 40px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .section-header p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* Sensitivity Panel */
+        .sens-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .sens-panel::before {
+            content: 'SENSITIVITY CONFIG';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg);
+            padding: 0 12px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--olive);
+            letter-spacing: 2px;
+        }
+
+        .sens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            padding: 32px;
+        }
+
+        .sens-item {
+            position: relative;
+        }
+
+        .sens-item label {
+            display: block;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--olive-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .sens-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.4rem;
+            color: var(--tan-light);
+            margin-bottom: 8px;
+        }
+
+        .sens-slider {
+            width: 100%;
+            height: 4px;
+            background: var(--bg);
+            border-radius: 0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .sens-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--tan);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+        }
+
+        .sens-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--tan);
+            cursor: pointer;
+            border: 2px solid var(--bg);
+            border-radius: 0;
+        }
+
+        .sens-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        .sens-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 0 32px 32px;
+        }
+
+        .sens-info-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .sens-info-box .label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .sens-info-box .value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--text-bright);
+        }
+
+        /* Game Cards */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            border-color: var(--olive);
+            background: var(--panel-raised);
+        }
+
+        .game-card:hover .game-card-accent {
+            opacity: 1;
+        }
+
+        .game-card-accent {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--olive);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .game-card-content {
+            padding: 32px;
+        }
+
+        .game-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .game-card h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-card-tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--olive);
+            border: 1px solid var(--olive);
+            padding: 2px 8px;
+            letter-spacing: 1px;
+        }
+
+        .game-card p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .game-card-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .meta-item {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        .meta-item span {
+            color: var(--tan-light);
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 200;
+            flex-direction: column;
+        }
+
+        .game-screen.active {
+            display: flex;
+        }
+
+        .game-header {
+            padding: 0 32px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+        }
+
+        .game-hud {
+            display: flex;
+            gap: 40px;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .hud-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .hud-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3rem;
+            color: var(--tan-light);
+            min-width: 60px;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .control-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            border-color: var(--tan);
+            color: var(--tan);
+        }
+
+        .control-btn.primary {
+            background: var(--olive);
+            border-color: var(--olive);
+            color: var(--bg);
+            font-weight: 600;
+        }
+
+        .control-btn.primary:hover {
+            background: var(--olive-light);
+            border-color: var(--olive-light);
+        }
+
+        .game-canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        /* Scope Overlay */
+        .scope-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: none;
+            z-index: 5;
+        }
+
+        .scope-overlay.active {
+            display: block;
+        }
+
+        /* Start Overlay */
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 14, 11, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .game-overlay.hidden {
+            display: none;
+        }
+
+        .overlay-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .overlay-desc {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 32px;
+            letter-spacing: 1px;
+        }
+
+        .overlay-btn {
+            padding: 16px 48px;
+            background: var(--olive);
+            border: none;
+            color: var(--bg);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .overlay-btn:hover {
+            background: var(--olive-light);
+        }
+
+        /* Results */
+        .results-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 14, 11, 0.95);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .results-modal.active {
+            display: flex;
+        }
+
+        .results-content {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            padding: 48px;
+        }
+
+        .results-content::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--olive);
+        }
+
+        .results-content h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text-bright);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: var(--border);
+            margin-bottom: 32px;
+        }
+
+        .result-cell {
+            background: var(--panel);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .result-cell .label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-cell .value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8rem;
+            color: var(--tan-light);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .auth-container {
+                margin: 16px;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sens-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sens-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-header {
+                padding: 0 16px;
+            }
+            
+            .game-hud {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tactical-bg"></div>
+
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>Sniper Arena</h1>
+                <div class="subtitle">TACTICAL TRAINING MODULE v2.4</div>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Operator Login</button>
+                <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Enlist</button>
+            </div>
+            
+            <form class="auth-form" id="authForm">
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label>Callsign</label>
+                    <input type="text" id="username" placeholder="Enter callsign">
+                </div>
+                <div class="form-group">
+                    <label>Comms ID / Email</label>
+                    <input type="email" id="email" placeholder="operator@unit.mil" required>
+                </div>
+                <div class="form-group">
+                    <label>Access Code</label>
+                    <input type="password" id="password" placeholder="Enter access code" required>
+                </div>
+                <button type="submit" class="auth-btn" id="authBtn">AUTHENTICATE</button>
+                <div class="error-msg" id="errorMsg"></div>
+            </form>
+            
+            <div style="padding: 0 40px 32px;">
+                <button class="guest-btn" onclick="loginAsGuest()">Field Operative (No Login)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="appContainer">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>Sniper Arena</h1>
+                <span class="tag">TACTICAL</span>
+            </div>
+            <div class="nav-stats">
+                <div class="nav-stat">
+                    <div class="nav-stat-label">Confirmed</div>
+                    <div class="nav-stat-value" id="totalScore">0</div>
+                </div>
+                <div class="nav-stat">
+                    <div class="nav-stat-label">Accuracy</div>
+                    <div class="nav-stat-value" id="accuracy">0%</div>
+                </div>
+                <div class="nav-stat">
+                    <div class="nav-stat-label">Missions</div>
+                    <div class="nav-stat-value" id="gamesPlayed">0</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Stand Down</button>
+            </div>
+        </nav>
+
+        <div class="dashboard">
+            <!-- Sensitivity Panel -->
+            <div class="section-header">
+                <h2>Loadout</h2>
+                <p>Configure your weapon sensitivity parameters</p>
+            </div>
+            
+            <div class="sens-panel">
+                <div class="sens-grid">
+                    <div class="sens-item">
+                        <label>Mouse DPI</label>
+                        <div class="sens-value" id="dpiVal">800</div>
+                        <input type="range" class="sens-slider" id="dpiSlider" min="400" max="3200" step="50" value="800" oninput="updateSens()">
+                        <div class="sens-readout">
+                            <span>400</span>
+                            <span>3200</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sens-item">
+                        <label>Hipfire Sens</label>
+                        <div class="sens-value" id="hipVal">1.20</div>
+                        <input type="range" class="sens-slider" id="hipSlider" min="0.1" max="5.0" step="0.01" value="1.20" oninput="updateSens()">
+                        <div class="sens-readout">
+                            <span>0.1</span>
+                            <span>5.0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sens-item">
+                        <label>ADS Multiplier</label>
+                        <div class="sens-value" id="adsVal">0.80</div>
+                        <input type="range" class="sens-slider" id="adsSlider" min="0.1" max="2.0" step="0.01" value="0.80" oninput="updateSens()">
+                        <div class="sens-readout">
+                            <span>0.1</span>
+                            <span>2.0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sens-item">
+                        <label>Scoped Multiplier</label>
+                        <div class="sens-value" id="scopeVal">0.50</div>
+                        <input type="range" class="sens-slider" id="scopeSlider" min="0.1" max="2.0" step="0.01" value="0.50" oninput="updateSens()">
+                        <div class="sens-readout">
+                            <span>0.1</span>
+                            <span>2.0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sens-info">
+                    <div class="sens-info-box">
+                        <div class="label">eDPI</div>
+                        <div class="value" id="edpiVal">960</div>
+                    </div>
+                    <div class="sens-info-box">
+                        <div class="label">cm/360</div>
+                        <div class="value" id="cm360Val">43.6</div>
+                    </div>
+                    <div class="sens-info-box">
+                        <div class="label">ADS eDPI</div>
+                        <div class="value" id="adsEdpiVal">768</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>Training Missions</h2>
+                <p>Select a mission to begin live-fire exercise</p>
+            </div>
+            
+            <div class="games-grid">
+                <div class="game-card" onclick="startGame('classic')">
+                    <div class="game-card-accent"></div>
+                    <div class="game-card-content">
+                        <div class="game-card-header">
+                            <h3>Zeroing</h3>
+                            <span class="game-card-tag">MARKSMAN</span>
+                        </div>
+                        <p>Static targets at varying distances. Confirm zero on your optic and establish baseline grouping.</p>
+                        <div class="game-card-meta">
+                            <div class="meta-item">RANGE: <span>100-300m</span></div>
+                            <div class="meta-item">WIND: <span>None</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" onclick="startGame('tracking')">
+                    <div class="game-card-accent"></div>
+                    <div class="game-card-content">
+                        <div class="game-card-header">
+                            <h3>Tracking</h3>
+                            <span class="game-card-tag">SPOTTER</span>
+                        </div>
+                        <p>Moving target at medium range. Maintain lead and holdover while tracking lateral movement.</p>
+                        <div class="game-card-meta">
+                            <div class="meta-item">RANGE: <span>200m</span></div>
+                            <div class="meta-item">WIND: <span>3-5 m/s</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" onclick="startGame('flick')">
+                    <div class="game-card-accent"></div>
+                    <div class="game-card-content">
+                        <div class="game-card-header">
+                            <h3>Quickscope</h3>
+                            <span class="game-card-tag">CQB</span>
+                        </div>
+                        <p>Targets appear at random bearings. Acquire, ADS, and engage before target goes cover.</p>
+                        <div class="game-card-meta">
+                            <div class="meta-item">RANGE: <span>50-150m</span></div>
+                            <div class="meta-item">WIND: <span>Variable</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" onclick="startGame('spider')">
+                    <div class="game-card-accent"></div>
+                    <div class="game-card-content">
+                        <div class="game-card-header">
+                            <h3>Hostiles</h3>
+                            <span class="game-card-tag">COMBAT</span>
+                        </div>
+                        <p>Multiple targets with erratic movement. Prioritize threats and manage ammunition discipline.</p>
+                        <div class="game-card-meta">
+                            <div class="meta-item">RANGE: <span>75-250m</span></div>
+                            <div class="meta-item">WIND: <span>8 m/s</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-screen" id="gameScreen">
+        <div class="game-header">
+            <div class="game-hud">
+                <div class="hud-item">
+                    <span class="hud-label">Score</span>
+                    <span class="hud-value" id="score">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">Time</span>
+                    <span class="hud-value" id="time">60</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">Hits</span>
+                    <span class="hud-value" id="hits">0</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">Misses</span>
+                    <span class="hud-value" id="misses">0</span>
+                </div>
+            </div>
+            <div class="game-controls">
+                <button class="control-btn" onclick="backToMenu()">Abort</button>
+                <button class="control-btn primary" onclick="toggleGame()">Engage</button>
+            </div>
+        </div>
+        
+        <div class="game-canvas-container" id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+            <div class="scope-overlay" id="scopeOverlay"></div>
+            <div class="game-overlay" id="gameOverlay">
+                <div class="overlay-title" id="overlayTitle">ZEROING</div>
+                <div class="overlay-desc" id="overlayDesc">Confirm zero on static targets</div>
+                <button class="overlay-btn" onclick="toggleGame()">BEGIN EXERCISE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="results-modal" id="resultsModal">
+        <div class="results-content">
+            <h2>Mission Complete</h2>
+            <div class="results-grid">
+                <div class="result-cell">
+                    <div class="label">Score</div>
+                    <div class="value" id="resultScore">0</div>
+                </div>
+                <div class="result-cell">
+                    <div class="label">Accuracy</div>
+                    <div class="value" id="resultAccuracy">0%</div>
+                </div>
+                <div class="result-cell">
+                    <div class="label">Confirmed</div>
+                    <div class="value" id="resultHits">0</div>
+                </div>
+                <div class="result-cell">
+                    <div class="label">Avg Time</div>
+                    <div class="value" id="resultAvg">0ms</div>
+                </div>
+            </div>
+            <div class="results-actions">
+                <button class="control-btn" onclick="closeResults()">Return to Base</button>
+                <button class="control-btn primary" onclick="restartGame()">Re-engage</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentUser = null;
+        let currentAuthTab = 'login';
+        let currentGame = null;
+        let gameRunning = false;
+        let gameState = {
+            score: 0, hits: 0, misses: 0, time: 60,
+            startTime: null, targets: [], particles: [],
+            mouseX: 0, mouseY: 0, isMouseDown: false,
+            isScoped: false
+        };
+        let userStats = {
+            totalScore: 0, totalHits: 0, totalMisses: 0, gamesPlayed: 0
+        };
+        let sensConfig = {
+            dpi: 800, hip: 1.20, ads: 0.80, scope: 0.50
+        };
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationId;
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            if (container) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Sensitivity Math
+        function updateSens() {
+            sensConfig.dpi = parseInt(document.getElementById('dpiSlider').value);
+            sensConfig.hip = parseFloat(document.getElementById('hipSlider').value);
+            sensConfig.ads = parseFloat(document.getElementById('adsSlider').value);
+            sensConfig.scope = parseFloat(document.getElementById('scopeSlider').value);
+            
+            document.getElementById('dpiVal').textContent = sensConfig.dpi;
+            document.getElementById('hipVal').textContent = sensConfig.hip.toFixed(2);
+            document.getElementById('adsVal').textContent = sensConfig.ads.toFixed(2);
+            document.getElementById('scopeVal').textContent = sensConfig.scope.toFixed(2);
+            
+            const edpi = sensConfig.dpi * sensConfig.hip;
+            const adsEdpi = edpi * sensConfig.ads;
+            const cm360 = (360 / (edpi * 0.022 * 2.54)) * 2.54;
+            
+            document.getElementById('edpiVal').textContent = Math.round(edpi);
+            document.getElementById('adsEdpiVal').textContent = Math.round(adsEdpi);
+            document.getElementById('cm360Val').textContent = cm360.toFixed(1);
+        }
+
+        // Auth
+        function switchAuthTab(tab) {
+            currentAuthTab = tab;
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+            
+            const nameGroup = document.getElementById('nameGroup');
+            const authBtn = document.getElementById('authBtn');
+            
+            if (tab === 'signup') {
+                nameGroup.style.display = 'block';
+                authBtn.textContent = 'ENLIST';
+            } else {
+                nameGroup.style.display = 'none';
+                authBtn.textContent = 'AUTHENTICATE';
+            }
+            document.getElementById('errorMsg').textContent = '';
+        }
+
+        function showError(msg) {
+            document.getElementById('errorMsg').textContent = msg;
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.trim();
+            
+            if (!email) { showError('Enter comms ID'); return; }
+            if (!password) { showError('Enter access code'); return; }
+            if (currentAuthTab === 'signup' && !username) { showError('Enter callsign'); return; }
+            if (password.length < 6) { showError('Code minimum 6 chars'); return; }
+            
+            const userId = 'op_' + btoa(email).replace(/[^a-zA-Z0-9]/g, '');
+            currentUser = {
+                id: userId,
+                email: email,
+                username: currentAuthTab === 'signup' ? username : (email.split('@')[0] || 'Operator')
+            };
+            
+            try {
+                const saved = localStorage.getItem('sniper_stats_' + currentUser.id);
+                if (saved) userStats = JSON.parse(saved);
+            } catch (e) {}
+            
+            updateStats();
+            enterApp();
+        }
+
+        function loginAsGuest() {
+            currentUser = {
+                id: 'guest_' + Date.now(),
+                email: 'field@op.local',
+                username: 'Field Op'
+            };
+            userStats = { totalScore: 0, totalHits: 0, totalMisses: 0, gamesPlayed: 0 };
+            updateStats();
+            enterApp();
+        }
+
+        function enterApp() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.add('active');
+        }
+
+        function logout() {
+            if (currentUser && currentUser.id) {
+                try {
+                    localStorage.setItem('sniper_stats_' + currentUser.id, JSON.stringify(userStats));
+                } catch (e) {}
+            }
+            currentUser = null;
+            userStats = { totalScore: 0, totalHits: 0, totalMisses: 0, gamesPlayed: 0 };
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('appContainer').classList.remove('active');
+            document.getElementById('authForm').reset();
+            showError('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalScore').textContent = userStats.totalScore.toLocaleString();
+            const total = userStats.totalHits + userStats.totalMisses;
+            const acc = total > 0 ? Math.round((userStats.totalHits / total) * 100) : 0;
+            document.getElementById('accuracy').textContent = acc + '%';
+            document.getElementById('gamesPlayed').textContent = userStats.gamesPlayed;
+        }
+
+        document.getElementById('authForm').addEventListener('submit', handleAuthSubmit);
+
+        // Game
+        function startGame(type) {
+            currentGame = type;
+            document.getElementById('gameScreen').classList.add('active');
+            
+            const titles = {
+                classic: 'ZEROING', tracking: 'TRACKING', flick: 'QUICKSCOPE', spider: 'HOSTILES'
+            };
+            const descs = {
+                classic: 'Engage static targets at range',
+                tracking: 'Maintain lead on moving target',
+                flick: 'Acquire and engage before cover',
+                spider: 'Multiple threats, prioritize targets'
+            };
+            
+            document.getElementById('overlayTitle').textContent = titles[type];
+            document.getElementById('overlayDesc').textContent = descs[type];
+            
+            resizeCanvas();
+            resetGame();
+        }
+
+        function resetGame() {
+            gameState = {
+                score: 0, hits: 0, misses: 0, time: 60,
+                startTime: null, targets: [], particles: [],
+                mouseX: 0, mouseY: 0, isMouseDown: false, isScoped: false
+            };
+            updateGameUI();
+            document.getElementById('gameOverlay').classList.remove('hidden');
+            gameRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+
+        function toggleGame() {
+            if (gameRunning) endGame();
+            else startGameLoop();
+        }
+
+        function startGameLoop() {
+            gameRunning = true;
+            gameState.startTime = Date.now();
+            document.getElementById('gameOverlay').classList.add('hidden');
+            
+            if (currentGame === 'classic') spawnClassicTargets();
+            else if (currentGame === 'tracking') spawnTrackingTarget();
+            else if (currentGame === 'flick') spawnFlickTarget();
+            else if (currentGame === 'spider') spawnSpiderTargets();
+            
+            gameLoop();
+            
+            const timerInterval = setInterval(() => {
+                if (!gameRunning) { clearInterval(timerInterval); return; }
+                gameState.time--;
+                updateGameUI();
+                if (gameState.time <= 0) { clearInterval(timerInterval); endGame(); }
+            }, 1000);
+        }
+
+        function spawnClassicTargets() {
+            while (gameState.targets.length < 3) {
+                gameState.targets.push({
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    radius: 28,
+                    spawnTime: Date.now()
+                });
+            }
+        }
+
+        function spawnTrackingTarget() {
+            gameState.targets = [{
+                x: canvas.width / 2, y: canvas.height / 2,
+                radius: 38, vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3,
+                health: 100, spawnTime: Date.now()
+            }];
+        }
+
+        function spawnFlickTarget() {
+            if (gameState.targets.length < 2) {
+                gameState.targets.push({
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    radius: 24, spawnTime: Date.now(), life: 1400
+                });
+            }
+        }
+
+        function spawnSpiderTargets() {
+            while (gameState.targets.length < 4) {
+                gameState.targets.push({
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    radius: 18, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
+                    spawnTime: Date.now()
+                });
+            }
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            ctx.fillStyle = '#0c0e0b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw tactical grid on canvas
+            ctx.strokeStyle = 'rgba(74, 93, 58, 0.06)';
+            ctx.lineWidth = 1;
+            const gridSize = 50;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            
+            updateTargets();
+            drawTargets();
+            updateParticles();
+            drawParticles();
+            drawTacticalCrosshair();
+            
+            if (currentGame === 'classic' && gameState.targets.length < 3) spawnClassicTargets();
+            if (currentGame === 'flick') {
+                gameState.targets = gameState.targets.filter(t => Date.now() - t.spawnTime < t.life);
+                if (gameState.targets.length < 2) spawnFlickTarget();
+            }
+            if (currentGame === 'spider' && gameState.targets.length < 4) spawnSpiderTargets();
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function updateTargets() {
+            gameState.targets.forEach(target => {
+                if (currentGame === 'tracking' || currentGame === 'spider') {
+                    target.x += target.vx;
+                    target.y += target.vy;
+                    if (target.x < target.radius || target.x > canvas.width - target.radius) target.vx *= -1;
+                    if (target.y < target.radius || target.y > canvas.height - target.radius) target.vy *= -1;
+                    
+                    if (currentGame === 'tracking') {
+                        const dx = gameState.mouseX - target.x;
+                        const dy = gameState.mouseY - target.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < target.radius && gameState.isMouseDown) {
+                            target.health -= 0.5;
+                            gameState.score += 1;
+                            if (target.health <= 0) {
+                                createExplosion(target.x, target.y, '#8b7d5a');
+                                gameState.hits++;
+                                gameState.score += 50;
+                                spawnTrackingTarget();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawTargets() {
+            gameState.targets.forEach(target => {
+                const age = Date.now() - target.spawnTime;
+                
+                if (currentGame === 'flick') {
+                    const progress = age / target.life;
+                    ctx.globalAlpha = 1 - progress;
+                }
+                
+                // Outer ring (olive)
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = currentGame === 'tracking' ? 
+                    `hsl(${target.health * 1.2}, 30%, 40%)` : '#4a5d3a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Inner fill
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, target.radius * 0.6, 0, Math.PI * 2);
+                ctx.fillStyle = currentGame === 'tracking' ? 
+                    `hsla(${target.health * 1.2}, 30%, 40%, 0.2)` : 'rgba(74, 93, 58, 0.15)';
+                ctx.fill();
+                
+                // Center dot (tan)
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#8b7d5a';
+                ctx.fill();
+                
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                const angle = (Math.PI * 2 / 10) * i;
+                const speed = Math.random() * 3 + 1;
+                gameState.particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 25, color: color,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        function updateParticles() {
+            gameState.particles = gameState.particles.filter(p => {
+                p.x += p.vx; p.y += p.vy; p.life--;
+                return p.life > 0;
+            });
+        }
+
+        function drawParticles() {
+            gameState.particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (p.life / 25), 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 25;
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function drawTacticalCrosshair() {
+            const x = gameState.mouseX;
+            const y = gameState.mouseY;
+            const size = gameState.isScoped ? 6 : 12;
+            
+            ctx.strokeStyle = 'rgba(184, 181, 168, 0.6)';
+            ctx.lineWidth = 1;
+            
+            // Cross
+            ctx.beginPath();
+            ctx.moveTo(x - size * 2, y);
+            ctx.lineTo(x - size * 0.5, y);
+            ctx.moveTo(x + size * 0.5, y);
+            ctx.lineTo(x + size * 2, y);
+            ctx.moveTo(x, y - size * 2);
+            ctx.lineTo(x, y - size * 0.5);
+            ctx.moveTo(x, y + size * 0.5);
+            ctx.lineTo(x, y + size * 2);
+            ctx.stroke();
+            
+            // Center box
+            ctx.strokeRect(x - size * 0.5, y - size * 0.5, size, size);
+            
+            // Mil dots if scoped
+            if (gameState.isScoped) {
+                for (let i = 1; i <= 3; i++) {
+                    ctx.fillStyle = 'rgba(184, 181, 168, 0.4)';
+                    ctx.fillRect(x - 1, y - size * 0.5 - i * 8, 2, 2);
+                    ctx.fillRect(x - 1, y + size * 0.5 + i * 8, 2, 2);
+                    ctx.fillRect(x - size * 0.5 - i * 8, y - 1, 2, 2);
+                    ctx.fillRect(x + size * 0.5 + i * 8, y - 1, 2, 2);
+                }
+            }
+        }
+
+        function handleClick(e) {
+            if (!gameRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            let hit = false;
+            
+            if (currentGame === 'classic' || currentGame === 'flick' || currentGame === 'spider') {
+                for (let i = gameState.targets.length - 1; i >= 0; i--) {
+                    const target = gameState.targets[i];
+                    const dx = x - target.x;
+                    const dy = y - target.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < target.radius) {
+                        hit = true;
+                        gameState.hits++;
+                        const timeBonus = Math.max(0, 100 - (Date.now() - target.spawnTime) / 10);
+                        gameState.score += Math.floor(100 + timeBonus);
+                        
+                        createExplosion(target.x, target.y, '#8b7d5a');
+                        gameState.targets.splice(i, 1);
+                        
+                        if (currentGame === 'classic') spawnClassicTargets();
+                        if (currentGame === 'spider') spawnSpiderTargets();
+                        break;
+                    }
+                }
+            }
+            
+            if (!hit) {
+                gameState.misses++;
+                gameState.score = Math.max(0, gameState.score - 10);
+            }
+            
+            updateGameUI();
+        }
+
+        function updateGameUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('time').textContent = gameState.time;
+            document.getElementById('hits').textContent = gameState.hits;
+            document.getElementById('misses').textContent = gameState.misses;
+        }
+
+        function endGame() {
+            gameRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            
+            userStats.totalScore += gameState.score;
+            userStats.totalHits += gameState.hits;
+            userStats.totalMisses += gameState.misses;
+            userStats.gamesPlayed++;
+            updateStats();
+            
+            const total = gameState.hits + gameState.misses;
+            const accuracy = total > 0 ? Math.round((gameState.hits / total) * 100) : 0;
+            const avgTime = gameState.hits > 0 ? Math.round((60 - gameState.time) * 1000 / gameState.hits) : 0;
+            
+            document.getElementById('resultScore').textContent = gameState.score;
+            document.getElementById('resultAccuracy').textContent = accuracy + '%';
+            document.getElementById('resultHits').textContent = gameState.hits;
+            document.getElementById('resultAvg').textContent = avgTime + 'ms';
+            
+            document.getElementById('resultsModal').classList.add('active');
+        }
+
+        function closeResults() {
+            document.getElementById('resultsModal').classList.remove('active');
+            backToMenu();
+        }
+
+        function restartGame() {
+            document.getElementById('resultsModal').classList.remove('active');
+            resetGame();
+            startGameLoop();
+        }
+
+        function backToMenu() {
+            gameRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultsModal').classList.remove('active');
+        }
+
+        // Right click to ADS (scope)
+        canvas.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            gameState.isScoped = !gameState.isScoped;
+        });
+        
+        canvas.addEventListener('click', handleClick);
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            gameState.mouseX = e.clientX - rect.left;
+            gameState.mouseY = e.clientY - rect.top;
+        });
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) gameState.isMouseDown = true;
+        });
+        canvas.addEventListener('mouseup', () => gameState.isMouseDown = false);
+
+        window.addEventListener('beforeunload', () => {
+            if (currentUser && currentUser.id) {
+                try {
+                    localStorage.setItem('sniper_stats_' + currentUser.id, JSON.stringify(userStats));
+                } catch (e) {}
+            }
+        });
+
+        // Init
+        updateSens();
+    </script>
+</body>
+</html>
